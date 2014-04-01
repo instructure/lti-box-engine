@@ -1,0 +1,33 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" ></script>
+<script type="text/javascript" src="https://app.box.com/js/static/select.js"></script>
+
+<div id="message">Click the button below to select your content</div>
+
+<div id="box-select" 
+     data-link-type="shared"
+     data-multiselect="false"
+     data-client-id="zfwxjp79195xz6to7uxlo0hsoehkgryq"></div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    var boxSelect = new BoxSelect();
+
+    // Register a success callback handler
+    boxSelect.success(function(response) {
+      var item = response[0];
+      $.post('<%= lti_embed_path %>', { item: item, lti_launch_id: <%= @lti_launch.id %> }).then(
+        function(data) { // success
+          window.location = data.redirect_url;
+        },
+        function(jqXHR) { // error
+          $('#message').html(jqXHR.responseText);
+        }
+      );
+    });
+
+    // Register a cancel callback handler
+    boxSelect.cancel(function() {
+      $('#message').html("Click the button below to select your content");
+    });
+  });
+</script>
