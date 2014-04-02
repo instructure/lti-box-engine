@@ -4,7 +4,7 @@
 <div id="message">Click the button below to select your content</div>
 
 <div id="box-select" 
-     data-link-type="shared"
+     data-link-type="<%= @link_type %>"
      data-multiselect="false"
      data-client-id="zfwxjp79195xz6to7uxlo0hsoehkgryq"></div>
 
@@ -17,17 +17,18 @@
       var item = response[0];
       $.post('<%= lti_embed_path %>', { item: item, lti_launch_id: <%= @lti_launch.id %> }).then(
         function(data) { // success
+          console.log(data.redirect_url);
           window.location = data.redirect_url;
         },
         function(jqXHR) { // error
-          $('#message').html(jqXHR.responseText);
+          $('#message').addClass('alert alert-danger').html(jqXHR.responseText);
         }
       );
     });
 
     // Register a cancel callback handler
     boxSelect.cancel(function() {
-      $('#message').html("Click the button below to select your content");
+      $('#message').removeClass('alert alert-danger').html("Click the button below to select your content");
     });
   });
 </script>

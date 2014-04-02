@@ -5,14 +5,16 @@ require "oauth/request_proxy/rack_request"
 module LtiBoxEngine
   class LtiController < ApplicationController
 
-    def picker
-    end
-
     def index
       @client = Client.new
       @tp = @client.authorize!(request, params)
       if @tp
         @lti_launch = LtiLaunch.create_from_tp(@tp)
+        if @tp.accepts_file?
+          @link_type = "direct"
+        else
+          @link_type = "shared"
+        end
       else
         # handle invalid auth
         @message = @client.error_message
@@ -27,10 +29,14 @@ module LtiBoxEngine
 
       tp = IMS::LTI::ToolProvider.new(nil, nil, launch_params)
       tp.extend IMS::LTI::Extensions::Content::ToolProvider
-
+      
       if tp.accepts_content?
-        if tp.accepts_url?
-          redirect_url = tp.url_content_return_url(item['url'], item['name'], item['name'])
+        if tp.accepts_file?(item['name']) && item['type'] != 'folder'
+          redirect_url = tp.file_content_return_url(item['url'], item['name'])
+          render json: { redirect_url: redirect_url } and return
+        elsif tp.accepts_url?
+          # The URL will be to a folder. We need to modify it to load the embed widget
+          redirect_url = tp.url_content_return_url(Client.box_url_to_box_embed_url(item['url']), item['name'], item['name'])
           render json: { redirect_url: redirect_url } and return
         else
           render text: 'Unsupported content type', status: 500
@@ -58,6 +64,7 @@ module LtiBoxEngine
       tc.canvas_resource_selection!(enabled: true)
       tc.canvas_course_navigation!(enabled: true)
       tc.canvas_user_navigation!(enabled: true)
+      tc.canvas_selector_dimensions!(430, 200)
       render xml: tc.to_xml
     end
 

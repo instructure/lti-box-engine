@@ -18,5 +18,6 @@ group :development do
 end
 
 group :development, :test do
+  gem "guard-rspec"
   gem "jazz_hands"
 end

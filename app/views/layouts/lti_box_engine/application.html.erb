@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>LtiBoxEngine</title>
+  <title>Box</title>
   <%= stylesheet_link_tag    "lti_box_engine/application", media: "all" %>
   <%= javascript_include_tag "lti_box_engine/application" %>
   <%= csrf_meta_tags %>
 </head>
 <body>
 
-<%= yield %>
+<div class="container">
+  <div class="content">
+    <%= yield %>
+  </div>
+</div>
 
 </body>
 </html>

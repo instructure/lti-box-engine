@@ -15,6 +15,11 @@ module LtiBoxEngine
       @error_message = message
     end
 
+    def self.box_url_to_box_embed_url(url)
+      embed_id = url.strip.split('/').last
+      "https://app.box.com/embed_widget/s/#{embed_id}?view=list&sort=name&direction=ASC&theme=blue"
+    end
+
     def authorize!(request, opts = {})
       @error_message = nil
       key = opts['oauth_consumer_key']

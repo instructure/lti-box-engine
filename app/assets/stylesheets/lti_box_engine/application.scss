@@ -1,1 +1,17 @@
-// @import "bootstrap";
+@import "bootstrap";
+
+body {
+  padding-top: 20px;
+  background-color: #eee;
+}
+
+.content {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+#box-select {
+  margin: 20px auto;
+}

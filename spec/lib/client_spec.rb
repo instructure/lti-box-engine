@@ -43,5 +43,11 @@ module LtiBoxEngine
         expect(result).to eq(@tp)
       end
     end
+
+    it ".box_url_to_box_embed_url" do
+      url = "https://app.box.com/s/abcdefg"
+      new_url = Client.box_url_to_box_embed_url(url)
+      expect(new_url).to eq("https://app.box.com/embed_widget/s/abcdefg?view=list&sort=name&direction=ASC&theme=blue")
+    end
   end
 end
