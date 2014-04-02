@@ -9,11 +9,16 @@ module LtiBoxEngine
       @client = Client.new
       @tp = @client.authorize!(request, params)
       if @tp
-        @lti_launch = LtiLaunch.create_from_tp(@tp)
-        if @tp.accepts_file?
-          @link_type = "direct"
+        if @tp.accepts_content?
+          @lti_launch = LtiLaunch.create_from_tp(@tp)
+          if @tp.accepts_file?
+            @link_type = "direct"
+          else
+            @link_type = "shared"
+          end
         else
-          @link_type = "shared"
+          # launched via navigation
+          redirect_to "https://www.box.com/embed_widget/files/0/f/0"
         end
       else
         # handle invalid auth
