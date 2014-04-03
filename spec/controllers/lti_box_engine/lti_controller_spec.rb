@@ -5,19 +5,39 @@ module LtiBoxEngine
 
     describe "GET 'index'" do
       it "returns http success" do
-        get 'index', use_route: :lti_box_engine
-        response.should be_success
+        lti_launch = LtiLaunch.create!(
+          nonce: "ABCDE",
+          request_oauth_timestamp: Time.now,
+          payload: {foo: 'bar'}
+        )
+        tp = double(
+          :accepts_content? => true,
+          :accepts_file? => false,
+          :url_content_return_url => '/return/url',
+          :file_content_return_url => '/return/file'
+
+        )
+        LtiLaunch.any_instance.stub(:create_tool_provider).and_return(tp)
+        token = lti_launch.generate_token
+        get 'index', token: token, use_route: :lti_box_engine
+        expect(response).to be_success
       end
+
+      it "returns http 401" do
+        get 'index', use_route: :lti_box_engine
+        expect(response.code).to eq "401"
+      end
+
     end
 
     describe "GET config" do
       it "should generate a valid xml cartridge" do
         request.stub(:env).and_return({
-          "SCRIPT_NAME"     => "/lti_box_engine",
-          "rack.url_scheme" => "http",
-          "HTTP_HOST"       => "test.host",
-          "PATH_INFO"       => "/lti_box_engine"
-        })
+                                        "SCRIPT_NAME" => "/lti_box_engine",
+                                        "rack.url_scheme" => "http",
+                                        "HTTP_HOST" => "test.host",
+                                        "PATH_INFO" => "/lti_box_engine"
+                                      })
         get 'xml_config', use_route: :lti_box_engine
         expect(response.body).to include('<blti:title>Box</blti:title>')
         expect(response.body).to include('<blti:description>Embed files from Box.net</blti:description>')
@@ -33,12 +53,12 @@ module LtiBoxEngine
     end
 
     describe "POST 'embed'" do
-      let(:lti_launch) {  
-        LtiLaunch.create!({
+      let(:lti_launch) {
+        LtiLaunch.create!(
           nonce: "ABCDE",
           request_oauth_timestamp: Time.now,
-          payload: { foo: 'bar' }
-        })
+          payload: {foo: 'bar'}
+        )
       }
 
       let(:item) {
@@ -50,11 +70,12 @@ module LtiBoxEngine
       }
 
       before :each do
-        @tp = double({
+        @tp = double(
           :accepts_content? => true,
           :url_content_return_url => '/return/url',
           :file_content_return_url => '/return/file'
-        })
+
+        )
         IMS::LTI::ToolProvider.stub(:new).and_return(@tp)
       end
 
@@ -70,7 +91,7 @@ module LtiBoxEngine
 
           expect(response.status).to eq 200
           json = JSON.parse(response.body)
-          expect(json['redirect_url']).to eq '/return/file' 
+          expect(json['redirect_url']).to eq '/return/file'
         end
 
         it "should return 500 error when filetype is not accepted" do
@@ -96,9 +117,9 @@ module LtiBoxEngine
 
           expect(response.status).to eq 200
           json = JSON.parse(response.body)
-          expect(json['redirect_url']).to eq '/return/url' 
+          expect(json['redirect_url']).to eq '/return/url'
         end
-        
+
         it "should return redirect url for url when tp does not accept file" do
           post 'embed', lti_launch_id: lti_launch.id, item: item, use_route: :lti_box_engine
 
@@ -124,6 +145,7 @@ module LtiBoxEngine
         expect(response.status).to eq 500
         expect(response.body).to eq 'Unsupported content type'
       end
+
     end
   end
 end

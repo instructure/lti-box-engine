@@ -4,19 +4,23 @@ require "oauth/request_proxy/rack_request"
 
 module LtiBoxEngine
   class LtiController < ApplicationController
-    before_filter :lti_auth, only: :index
 
     def index
-      if @tp.accepts_content?
-        @lti_launch = LtiLaunch.create_from_tp(@tp)
-        if @tp.accepts_file?
-          @link_type = "direct"
+      if @lti_launch = LtiLaunch.get_by_token(params[:token])
+        @tp = @lti_launch.create_tool_provider
+
+        if @tp.accepts_content?
+          if @tp.accepts_file?
+            @link_type = "direct"
+          else
+            @link_type = "shared"
+          end
         else
-          @link_type = "shared"
+          # launched via navigation
+          redirect_to "https://www.box.com/embed_widget/files/0/f/0"
         end
       else
-        # launched via navigation
-        redirect_to "https://www.box.com/embed_widget/files/0/f/0"
+        render status: :unauthorized
       end
     end
 
@@ -66,20 +70,21 @@ module LtiBoxEngine
       render xml: tc.to_xml
     end
 
-    def health_check
-      head 200
-    end
-
-    private
-
-    def lti_auth
-      @client = Client.new
-      @tp = @client.authorize!(request, params)
-      unless @tp
+    def launch
+      client = Client.new
+      tp = client.authorize!(request, params)
+      if tp
+        lti_launch = LtiLaunch.create_from_tp(tp)
+        redirect_to lti_index_path(token: lti_launch.generate_token)
+      else
         # handle invalid auth
-        @message = @client.error_message
+        @message = client.error_message
         render :error
       end
+    end
+
+    def health_check
+      head 200
     end
 
   end
