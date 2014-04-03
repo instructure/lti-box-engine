@@ -1,0 +1,12 @@
+defaults: &defaults
+  client_id: box_client_id
+  redirect_uri: /my/redirect/uri
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

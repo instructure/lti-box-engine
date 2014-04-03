@@ -19,6 +19,11 @@ module LtiBoxEngine
           payload: tp.to_params
         })
       end
+
+      def get_user_for_lti_launch(tp)
+        User.where(lti_id: tp.user_id, tool_consumer_instance_guid: tp.tool_consumer_instance_guid)
+      end
+
     end
   end
 end

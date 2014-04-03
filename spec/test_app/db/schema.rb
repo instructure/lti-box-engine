@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140401155717) do
+ActiveRecord::Schema.define(version: 20140402222507) do
 
   create_table "lti_box_engine_lti_launches", force: true do |t|
     t.string   "nonce"
@@ -19,6 +19,12 @@ ActiveRecord::Schema.define(version: 20140401155717) do
     t.datetime "request_oauth_timestamp"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "lti_box_engine_users", force: true do |t|
+    t.string "tool_consumer_instance_guid"
+    t.string "lti_id"
+    t.string "box_oauth_state"
   end
 
 end
