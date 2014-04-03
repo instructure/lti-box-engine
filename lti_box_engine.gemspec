@@ -7,7 +7,7 @@ require "lti_box_engine/version"
 Gem::Specification.new do |s|
   s.name        = "lti_box_engine"
   s.version     = LtiBoxEngine::VERSION
-  s.authors     = ["Brad Humphreys", "Eric Berry"]
+  s.authors     = ["Brad Humphrey", "Eric Berry"]
   s.email       = ["brad@instructure.com", "ericb@instructure.com"]
   s.homepage    = "https://github.com/instructure/lti-box-engine"
   s.summary     = "Box.net LTI Application"
