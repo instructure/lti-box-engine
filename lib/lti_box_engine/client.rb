@@ -3,8 +3,6 @@ require 'ims/lti'
 module LtiBoxEngine
   class Client
 
-    $oauth_creds = { "key" => "secret" }
-
     attr_accessor :error_message
 
     def initialize
@@ -20,10 +18,10 @@ module LtiBoxEngine
       "https://app.box.com/embed_widget/s/#{embed_id}?view=list&sort=name&direction=ASC&theme=blue"
     end
 
-    def authorize!(request, opts = {})
+    def authorize!(request, secret)
       @error_message = nil
-      key = opts['oauth_consumer_key']
-      tp = IMS::LTI::ToolProvider.new(key, $oauth_creds[key], opts)
+      key = request.params['oauth_consumer_key']
+      tp = IMS::LTI::ToolProvider.new(key, secret, request.params)
 
       if !tp.valid_request?(request)
         register_error("The OAuth signature was invalid")

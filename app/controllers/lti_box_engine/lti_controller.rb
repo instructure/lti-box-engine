@@ -72,10 +72,12 @@ module LtiBoxEngine
 
     def launch
       client = Client.new
-      tp = client.authorize!(request, params)
-      if tp
+      secret = Account.where(key: params[:oauth_consumer_key]).pluck(:secret)
+      if tp = client.authorize!(request, secret)
         lti_launch = LtiLaunch.create_from_tp(tp)
-        redirect_to lti_index_path(token: lti_launch.generate_token)
+        lti_launch.generate_token
+
+        redirect_to lti_index_path(token: token)
       else
         # handle invalid auth
         @message = client.error_message
