@@ -75,7 +75,7 @@ module LtiBoxEngine
       secret = Account.where(key: params[:oauth_consumer_key]).pluck(:secret)
       if tp = client.authorize!(request, secret)
         lti_launch = LtiLaunch.create_from_tp(tp)
-        lti_launch.generate_token
+        token = lti_launch.generate_token
 
         redirect_to lti_index_path(token: token)
       else

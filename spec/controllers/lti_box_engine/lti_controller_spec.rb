@@ -2,6 +2,7 @@ require 'spec_helper'
 
 module LtiBoxEngine
   describe LtiController do
+    routes { LtiBoxEngine::Engine.routes }
 
     describe "GET 'index'" do
       it "returns http success" do
@@ -19,12 +20,12 @@ module LtiBoxEngine
         )
         LtiLaunch.any_instance.stub(:create_tool_provider).and_return(tp)
         token = lti_launch.generate_token
-        get 'index', token: token, use_route: :lti_box_engine
+        get 'index', token: token
         expect(response).to be_success
       end
 
       it "returns http 401" do
-        get 'index', use_route: :lti_box_engine
+        get 'index'
         expect(response.code).to eq "401"
       end
 
@@ -38,7 +39,7 @@ module LtiBoxEngine
                                         "HTTP_HOST" => "test.host",
                                         "PATH_INFO" => "/lti_box_engine"
                                       })
-        get 'xml_config', use_route: :lti_box_engine
+        get 'xml_config'
         expect(response.body).to include('<blti:title>Box</blti:title>')
         expect(response.body).to include('<blti:description>Embed files from Box.net</blti:description>')
         expect(response.body).to include('<lticm:property name="text">Box</lticm:property>')
@@ -87,7 +88,7 @@ module LtiBoxEngine
 
         it "should return redirect url for file" do
           item['type'] = 'file'
-          post 'embed', lti_launch_id: lti_launch.id, item: item, use_route: :lti_box_engine
+          post 'embed', lti_launch_id: lti_launch.id, item: item
 
           expect(response.status).to eq 200
           json = JSON.parse(response.body)
@@ -97,7 +98,7 @@ module LtiBoxEngine
         it "should return 500 error when filetype is not accepted" do
           @tp.stub(:accepts_file?).with('photo.poo').and_return(false)
           item['name'] = 'photo.poo'
-          post 'embed', lti_launch_id: lti_launch.id, item: item, use_route: :lti_box_engine
+          post 'embed', lti_launch_id: lti_launch.id, item: item
 
           expect(response.status).to eq 500
           expect(response.body).to eq("Unsupported content type")
@@ -113,7 +114,7 @@ module LtiBoxEngine
         it "should return redirect url for url when item type is folder" do
           @tp.stub(:accepts_file?).and_return(true)
           item['type'] = 'folder'
-          post 'embed', lti_launch_id: lti_launch.id, item: item, use_route: :lti_box_engine
+          post 'embed', lti_launch_id: lti_launch.id, item: item
 
           expect(response.status).to eq 200
           json = JSON.parse(response.body)
@@ -121,7 +122,7 @@ module LtiBoxEngine
         end
 
         it "should return redirect url for url when tp does not accept file" do
-          post 'embed', lti_launch_id: lti_launch.id, item: item, use_route: :lti_box_engine
+          post 'embed', lti_launch_id: lti_launch.id, item: item
 
           expect(response.status).to eq 200
           json = JSON.parse(response.body)
@@ -131,7 +132,7 @@ module LtiBoxEngine
 
       it "should return a 500 error if tp doesn't accept content" do
         @tp.stub(:accepts_content?).and_return(false)
-        post 'embed', lti_launch_id: lti_launch.id, use_route: :lti_box_engine
+        post 'embed', lti_launch_id: lti_launch.id
 
         expect(response.status).to eq 500
         expect(response.body).to eq 'Unable to embed content'
@@ -140,12 +141,31 @@ module LtiBoxEngine
       it "should return a 500 error if tp doesn't accept url or file" do
         @tp.stub(:accepts_url?).and_return(false)
         @tp.stub(:accepts_file?).and_return(false)
-        post 'embed', lti_launch_id: lti_launch.id, item: item, use_route: :lti_box_engine
+        post 'embed', lti_launch_id: lti_launch.id, item: item
 
         expect(response.status).to eq 500
         expect(response.body).to eq 'Unsupported content type'
       end
 
     end
+
+    describe '#launch' do
+
+      it 'renders an error if lti auth fails' do
+        response = post 'launch'
+        expect(response.code).to render_template(:error)
+      end
+
+      it 'redirects to lti index' do
+        Client.any_instance.stub(:authorize!).and_return true
+        LtiLaunch.stub(:create_from_tp).and_return(double('lti_launch', generate_token: 'token'))
+
+        response = post 'launch'
+        expect(response).to redirect_to(lti_index_path(token: 'token'))
+
+      end
+
+    end
+
   end
 end
