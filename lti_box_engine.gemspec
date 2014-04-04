@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency "sass-rails", ">= 3.2"
   s.add_dependency "bootstrap-sass", "~> 3.1.0"
   s.add_dependency "ims-lti"
+  s.add_dependency "ruby-box", "~> 1.14.0"
 
   s.add_development_dependency "sqlite3"
   s.add_development_dependency "rspec-rails"

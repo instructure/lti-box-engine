@@ -29,5 +29,13 @@ module LtiBoxEngine
         render :text => '', :content_type => 'text/plain'
       end
     end
+
+    def box_session
+      @box_session ||= RubyBox::Session.new(
+        client_id: BOX_CONFIG[:client_id],
+        client_secret: BOX_CONFIG[:client_secret]
+      )
+    end
+
   end
 end

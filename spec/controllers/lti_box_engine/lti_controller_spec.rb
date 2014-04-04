@@ -159,10 +159,24 @@ module LtiBoxEngine
       it 'redirects to lti index' do
         Client.any_instance.stub(:authorize!).and_return true
         LtiLaunch.stub(:create_from_tp).and_return(double('lti_launch', generate_token: 'token'))
+        user = User.new
+        user.refresh_token = '123'
+        User.stub(:get_or_create_user_for_lti_launch).and_return(user)
+
 
         response = post 'launch'
         expect(response).to redirect_to(lti_index_path(token: 'token'))
 
+      end
+
+      it "redirects to box if there isn't a refresh token" do
+        Client.any_instance.stub(:authorize!).and_return true
+        LtiLaunch.stub(:create_from_tp).and_return(double('lti_launch', generate_token: 'token'))
+        User.stub(:get_or_create_user_for_lti_launch).and_return(User.new)
+        LtiLaunch.any_instance.stub(:generate_token).and_return('token')
+        RubyBox::Session.any_instance.stub(:authorize_url).and_return('http://redirect.app')
+        response = post 'launch', oauth_consumer_key: '2'
+        expect(response).to redirect_to('http://redirect.app')
       end
 
     end

@@ -5,6 +5,7 @@ LtiBoxEngine::Engine.routes.draw do
   get "health_check" => "lti#health_check"
   match "/" => "lti#launch", via: [:get, :post]
   match "/picker" => "lti#picker", via: [:get, :post]
+  match "oauth2" => "box_oauth#index", via: :get, as: :oauth2
   root "lti#launch"
   get "lti/index"
   get "test/backdoor"
