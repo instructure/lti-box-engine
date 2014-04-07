@@ -7,15 +7,15 @@ module LtiBoxEngine
     describe "GET 'index'" do
       it "returns http success" do
         lti_launch = LtiLaunch.create!(
-          nonce: "ABCDE",
-          request_oauth_timestamp: Time.now,
-          payload: {foo: 'bar'}
+            nonce: "ABCDE",
+            request_oauth_timestamp: Time.now,
+            payload: {foo: 'bar'}
         )
         tp = double(
-          :accepts_content? => true,
-          :accepts_file? => false,
-          :url_content_return_url => '/return/url',
-          :file_content_return_url => '/return/file'
+            :accepts_content? => true,
+            :accepts_file? => false,
+            :url_content_return_url => '/return/url',
+            :file_content_return_url => '/return/file'
 
         )
         LtiLaunch.any_instance.stub(:create_tool_provider).and_return(tp)
@@ -34,10 +34,10 @@ module LtiBoxEngine
     describe "GET config" do
       it "should generate a valid xml cartridge" do
         request.stub(:env).and_return({
-                                        "SCRIPT_NAME" => "/lti_box_engine",
-                                        "rack.url_scheme" => "http",
-                                        "HTTP_HOST" => "test.host",
-                                        "PATH_INFO" => "/lti_box_engine"
+                                          "SCRIPT_NAME" => "/lti_box_engine",
+                                          "rack.url_scheme" => "http",
+                                          "HTTP_HOST" => "test.host",
+                                          "PATH_INFO" => "/lti_box_engine"
                                       })
         get 'xml_config'
         expect(response.body).to include('<blti:title>Box</blti:title>')
@@ -56,25 +56,25 @@ module LtiBoxEngine
     describe "POST 'embed'" do
       let(:lti_launch) {
         LtiLaunch.create!(
-          nonce: "ABCDE",
-          request_oauth_timestamp: Time.now,
-          payload: {foo: 'bar'}
+            nonce: "ABCDE",
+            request_oauth_timestamp: Time.now,
+            payload: {foo: 'bar'}
         )
       }
 
       let(:item) {
         {
-          url: '/some/url',
-          name: 'file name',
-          type: 'file'
+            url: '/some/url',
+            name: 'file name',
+            type: 'file'
         }
       }
 
       before :each do
         @tp = double(
-          :accepts_content? => true,
-          :url_content_return_url => '/return/url',
-          :file_content_return_url => '/return/file'
+            :accepts_content? => true,
+            :url_content_return_url => '/return/url',
+            :file_content_return_url => '/return/file'
 
         )
         IMS::LTI::ToolProvider.stub(:new).and_return(@tp)
@@ -150,35 +150,46 @@ module LtiBoxEngine
     end
 
     describe '#launch' do
+      let(:user) { User.new }
+
+      before(:each) do
+        User.stub(:get_or_create_user_for_lti_launch).and_return(user)
+        LtiLaunch.stub(:create_from_tp).and_return(double('lti_launch', generate_token: 'token'))
+      end
 
       it 'renders an error if lti auth fails' do
         response = post 'launch'
         expect(response.code).to render_template(:error)
       end
 
+      it 'looks up the secret based on the key' do
+        Account.create!(key: 'key', secret: 'secret')
+        client = double(authorize!: true)
+        Client.stub(:new).and_return(client)
+
+        post 'launch', oauth_consumer_key: 'key'
+
+        expect(client).to have_received(:authorize!).with(anything(), 'secret')
+      end
+
       it 'redirects to lti index' do
         Client.any_instance.stub(:authorize!).and_return true
-        LtiLaunch.stub(:create_from_tp).and_return(double('lti_launch', generate_token: 'token'))
-        user = User.new
         user.refresh_token = '123'
-        User.stub(:get_or_create_user_for_lti_launch).and_return(user)
-
 
         response = post 'launch'
-        expect(response).to redirect_to(lti_index_path(token: 'token'))
 
+        expect(response).to redirect_to(lti_index_path(token: 'token'))
       end
 
       it "redirects to box if there isn't a refresh token" do
         Client.any_instance.stub(:authorize!).and_return true
-        LtiLaunch.stub(:create_from_tp).and_return(double('lti_launch', generate_token: 'token'))
-        User.stub(:get_or_create_user_for_lti_launch).and_return(User.new)
         LtiLaunch.any_instance.stub(:generate_token).and_return('token')
         RubyBox::Session.any_instance.stub(:authorize_url).and_return('http://redirect.app')
+
         response = post 'launch', oauth_consumer_key: '2'
+
         expect(response).to redirect_to('http://redirect.app')
       end
-
     end
 
   end

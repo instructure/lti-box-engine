@@ -73,7 +73,7 @@ module LtiBoxEngine
 
     def launch
       client = Client.new
-      secret = Account.where(key: params[:oauth_consumer_key]).pluck(:secret)
+      secret = Account.where(key: params[:oauth_consumer_key]).pluck(:secret).first
       if tp = client.authorize!(request, secret)
         lti_launch = LtiLaunch.create_from_tp(tp)
         token = lti_launch.generate_token
