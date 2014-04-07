@@ -10,13 +10,13 @@ module LtiBoxEngine
       let(:box_session) { double('session', get_access_token: box_token) }
 
       before :each do
-        LtiLaunch.stub(:get_by_token).and_return(double('lti_launch', generate_token: '', create_tool_provider: {}))
+        LtiLaunch.stub(:get_by_token).and_return(double('lti_launch', generate_token: '', user: user))
         User.stub(:get_or_create_user_for_lti_launch).and_return (user)
         RubyBox::Session.stub(:new).and_return(box_session)
       end
 
       it 'redirects to lti_index' do
-        LtiLaunch.stub(:get_by_token).and_return(double('lti_launch', generate_token: '4321dcba', create_tool_provider: {}))
+        LtiLaunch.stub(:get_by_token).and_return(double('lti_launch', generate_token: '4321dcba', user: user))
         response = get 'index', code: '123456abcdef', state: 'token'
 
         expect(LtiLaunch).to have_received(:get_by_token).with('token')

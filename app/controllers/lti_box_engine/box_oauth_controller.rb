@@ -5,7 +5,7 @@ module LtiBoxEngine
       state = params[:state]
 
       launch = LtiLaunch.get_by_token(state)
-      user = User.get_or_create_user_for_lti_launch(launch.create_tool_provider)
+      user = launch.user
 
       #make call to get tokens
       oauth2_token = box_session.get_access_token(params[:code])

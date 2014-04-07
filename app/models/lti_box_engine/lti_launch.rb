@@ -1,5 +1,7 @@
 module LtiBoxEngine
   class LtiLaunch < ActiveRecord::Base
+    belongs_to :user
+
     serialize :payload, Hash
     before_save :update_token_timestamp
 

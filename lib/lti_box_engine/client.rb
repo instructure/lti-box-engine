@@ -18,9 +18,10 @@ module LtiBoxEngine
       "https://app.box.com/embed_widget/s/#{embed_id}?view=list&sort=name&direction=ASC&theme=blue"
     end
 
-    def authorize!(request, secret)
+    def authorize!(request, account)
       @error_message = nil
       key = request.params['oauth_consumer_key']
+      secret = account ? account.secret : nil
       tp = IMS::LTI::ToolProvider.new(key, secret, request.params)
 
       if !tp.valid_request?(request)

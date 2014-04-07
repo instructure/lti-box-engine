@@ -151,10 +151,17 @@ module LtiBoxEngine
 
     describe '#launch' do
       let(:user) { User.new }
+      let(:tool_provider) {
+        double(request_oauth_nonce: nil,
+               request_oauth_timestamp: nil,
+               to_params: nil,
+               user_id: 'lti_user_id',
+               tool_consumer_instance_guid: 'instance_guid')
+      }
 
       before(:each) do
-        User.stub(:get_or_create_user_for_lti_launch).and_return(user)
-        LtiLaunch.stub(:create_from_tp).and_return(double('lti_launch', generate_token: 'token'))
+        User.any_instance.stub(:create_lti_launch_from_tool_provider).and_return(double('lti_launch', generate_token: 'token'))
+        @account = Account.create!(key: 'key', secret: 'secret')
       end
 
       it 'renders an error if lti auth fails' do
@@ -163,30 +170,33 @@ module LtiBoxEngine
       end
 
       it 'looks up the secret based on the key' do
-        Account.create!(key: 'key', secret: 'secret')
-        client = double(authorize!: true)
+        client = double(authorize!: tool_provider)
         Client.stub(:new).and_return(client)
 
         post 'launch', oauth_consumer_key: 'key'
 
-        expect(client).to have_received(:authorize!).with(anything(), 'secret')
+        expect(client).to have_received(:authorize!).with(anything(), @account)
       end
 
       it 'redirects to lti index' do
-        Client.any_instance.stub(:authorize!).and_return true
+        Client.any_instance.stub(:authorize!).and_return(tool_provider)
+        user.account = @account
+        user.lti_user_id = 'lti_user_id'
+        user.tool_consumer_instance_guid = 'instance_guid'
         user.refresh_token = '123'
+        user.save!
 
-        response = post 'launch'
+        response = post 'launch', oauth_consumer_key: 'key'
 
         expect(response).to redirect_to(lti_index_path(token: 'token'))
       end
 
       it "redirects to box if there isn't a refresh token" do
-        Client.any_instance.stub(:authorize!).and_return true
+        Client.any_instance.stub(:authorize!).and_return(tool_provider)
         LtiLaunch.any_instance.stub(:generate_token).and_return('token')
         RubyBox::Session.any_instance.stub(:authorize_url).and_return('http://redirect.app')
 
-        response = post 'launch', oauth_consumer_key: '2'
+        response = post 'launch', oauth_consumer_key: 'key'
 
         expect(response).to redirect_to('http://redirect.app')
       end

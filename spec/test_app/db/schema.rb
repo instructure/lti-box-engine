@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140404144628) do
+ActiveRecord::Schema.define(version: 20140407220730) do
 
   create_table "lti_box_engine_accounts", force: true do |t|
     t.string   "name"
@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(version: 20140404144628) do
     t.datetime "updated_at"
     t.string   "token"
     t.datetime "token_timestamp"
+    t.integer  "user_id"
   end
 
   create_table "lti_box_engine_users", force: true do |t|

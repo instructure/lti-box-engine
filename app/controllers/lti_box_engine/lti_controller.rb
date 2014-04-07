@@ -2,6 +2,7 @@ require_dependency "lti_box_engine/application_controller"
 require "ims/lti"
 require "oauth/request_proxy/rack_request"
 require "ruby-box"
+require "monkey_patches/ruby-box/session"
 
 module LtiBoxEngine
   class LtiController < ApplicationController
@@ -73,17 +74,16 @@ module LtiBoxEngine
 
     def launch
       client = Client.new
-      secret = Account.where(key: params[:oauth_consumer_key]).pluck(:secret).first
-      if tp = client.authorize!(request, secret)
-        lti_launch = LtiLaunch.create_from_tp(tp)
+      account = Account.where(key: params[:oauth_consumer_key]).first
+      if tp = client.authorize!(request, account)
+        user = account.users.by_tool_provider(tp).first_or_create
+        lti_launch = user.create_lti_launch_from_tool_provider(tp)
         token = lti_launch.generate_token
-        user = User.get_or_create_user_for_lti_launch(tp)
         if user.refresh_token
           redirect_to lti_index_path(token: token)
         else
-          redirect_to box_session.authorize_url(oauth2_url)
+          redirect_to box_session.authorize_url(oauth2_url, token)
         end
-
       else
         # handle invalid auth
         @message = client.error_message
