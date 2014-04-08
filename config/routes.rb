@@ -9,4 +9,6 @@ LtiBoxEngine::Engine.routes.draw do
   root "lti#launch"
   get "lti/index"
   get "test/backdoor"
+
+  resources :accounts
 end

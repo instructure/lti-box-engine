@@ -1,0 +1,57 @@
+<% content_for :head do %>
+<script type="text/javascript">
+  EmberENV = {
+    HOST: '<%= root_url %>'
+  };
+</script>
+<%= javascript_include_tag "lti_box_engine/application" %>
+<% end %>
+
+<div id="ember-app"></div>
+
+<script type="text/x-handlebars">
+  {{outlet}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="index">
+  <h3>Found {{length}} accounts</h3>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>OAuth Key</th>
+        <th>OAuth Secret</th>
+        <th>&nbsp;</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{input type="text" value=newName class="form-control"}}</td>
+        <td>{{input type="text" value=newOauthKey class="form-control"}}</td>
+        <td>{{input type="text" value=newOauthSecret class="form-control"}}</td>
+        <td class="text-right"><button {{action "addAccount"}} class="btn btn-block">Create</button></td>
+      </tr>
+      {{#each}}
+        <tr>
+          {{#if isEditing}}
+            <td>{{input type="text" value=name class="form-control"}}</td>
+            <td>{{input type="text" value=oauthKey class="form-control"}}</td>
+            <td>{{input type="text" value=oauthSecret class="form-control"}}</td>
+            <td class="text-right"><button {{action "saveAccount" this}} class="btn btn-success btn-block">Save Changes</button></td>
+          {{else}}
+            <td>{{name}}</td>
+            <td>{{oauthKey}}</td>
+            <td>{{oauthSecret}}</td>
+            <td class="text-right">
+              <button type="button" {{action "editAccount" this}} class="btn btn-info">Edit</button>
+              <button type="button" {{action "deleteAccount" this}} class="btn btn-danger">Delete</button>
+            </td>
+          {{/if}}
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</script>
+
+
+

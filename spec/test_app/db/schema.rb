@@ -15,8 +15,8 @@ ActiveRecord::Schema.define(version: 20140407220730) do
 
   create_table "lti_box_engine_accounts", force: true do |t|
     t.string   "name"
-    t.string   "key"
-    t.string   "secret"
+    t.string   "oauth_key"
+    t.string   "oauth_secret"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

@@ -20,9 +20,9 @@ module LtiBoxEngine
 
     def authorize!(request, account)
       @error_message = nil
-      key = request.params['oauth_consumer_key']
-      secret = account ? account.secret : nil
-      tp = IMS::LTI::ToolProvider.new(key, secret, request.params)
+      oauth_key = request.params['oauth_consumer_key']
+      oauth_secret = account ? account.oauth_secret : nil
+      tp = IMS::LTI::ToolProvider.new(oauth_key, oauth_secret, request.params)
 
       if !tp.valid_request?(request)
         register_error("The OAuth signature was invalid")

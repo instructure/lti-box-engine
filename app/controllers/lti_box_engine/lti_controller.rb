@@ -74,7 +74,7 @@ module LtiBoxEngine
 
     def launch
       client = Client.new
-      account = Account.where(key: params[:oauth_consumer_key]).first
+      account = Account.where(oauth_key: params[:oauth_consumer_key]).first
       if tp = client.authorize!(request, account)
         user = account.users.by_tool_provider(tp).first_or_create
         lti_launch = user.create_lti_launch_from_tool_provider(tp)

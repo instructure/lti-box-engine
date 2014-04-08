@@ -7,11 +7,11 @@ module LtiBoxEngine
     end
 
     describe "#authorize!" do
-      let(:account) { Account.new(secret: 'secret') }
+      let(:account) { Account.new(oauth_secret: 'oauth_secret') }
       let(:mock_request) { double('request', params: {}) }
 
       before(:each) do
-        @tp = IMS::LTI::ToolProvider.new('key', 'secret', {})
+        @tp = IMS::LTI::ToolProvider.new('oauth_key', 'oauth_secret', {})
         IMS::LTI::ToolProvider.stub(:new).and_return(@tp)
         @tp.stub(:valid_request?).and_return(true)
         @tp.stub(:request_oauth_timestamp).and_return(Time.now)

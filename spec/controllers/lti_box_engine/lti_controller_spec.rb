@@ -161,7 +161,7 @@ module LtiBoxEngine
 
       before(:each) do
         User.any_instance.stub(:create_lti_launch_from_tool_provider).and_return(double('lti_launch', generate_token: 'token'))
-        @account = Account.create!(key: 'key', secret: 'secret')
+        @account = Account.create!(oauth_key: 'oauth_key', oauth_secret: 'oauth_secret')
       end
 
       it 'renders an error if lti auth fails' do
@@ -169,11 +169,11 @@ module LtiBoxEngine
         expect(response.code).to render_template(:error)
       end
 
-      it 'looks up the secret based on the key' do
+      it 'looks up the secret based on the oauth_key' do
         client = double(authorize!: tool_provider)
         Client.stub(:new).and_return(client)
 
-        post 'launch', oauth_consumer_key: 'key'
+        post 'launch', oauth_consumer_key: 'oauth_key'
 
         expect(client).to have_received(:authorize!).with(anything(), @account)
       end
@@ -186,7 +186,7 @@ module LtiBoxEngine
         user.refresh_token = '123'
         user.save!
 
-        response = post 'launch', oauth_consumer_key: 'key'
+        response = post 'launch', oauth_consumer_key: 'oauth_key'
 
         expect(response).to redirect_to(lti_index_path(token: 'token'))
       end
@@ -196,7 +196,7 @@ module LtiBoxEngine
         LtiLaunch.any_instance.stub(:generate_token).and_return('token')
         RubyBox::Session.any_instance.stub(:authorize_url).and_return('http://redirect.app')
 
-        response = post 'launch', oauth_consumer_key: 'key'
+        response = post 'launch', oauth_consumer_key: 'oauth_key'
 
         expect(response).to redirect_to('http://redirect.app')
       end
