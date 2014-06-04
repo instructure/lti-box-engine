@@ -2,6 +2,8 @@ module LtiBoxEngine
   class User < ActiveRecord::Base
     belongs_to :account
     has_many :lti_launches
+    attr_encrypted :access_token, :key => BOX_CONFIG[:encryption_key], mode: :per_attribute_iv_and_salt
+    attr_encrypted :refresh_token, key: BOX_CONFIG[:encryption_key], mode: :per_attribute_iv_and_salt
 
     scope :by_tool_provider, ->(tp) {
       where(lti_user_id: tp.user_id, tool_consumer_instance_guid: tp.tool_consumer_instance_guid)

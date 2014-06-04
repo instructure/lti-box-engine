@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140407220730) do
+ActiveRecord::Schema.define(version: 20140604153946) do
 
   create_table "lti_box_engine_accounts", force: true do |t|
     t.string   "name"
@@ -35,9 +35,13 @@ ActiveRecord::Schema.define(version: 20140407220730) do
   create_table "lti_box_engine_users", force: true do |t|
     t.string  "tool_consumer_instance_guid"
     t.string  "lti_user_id"
-    t.string  "access_token"
-    t.string  "refresh_token"
     t.integer "account_id"
+    t.string  "encrypted_refresh_token"
+    t.string  "encrypted_refresh_token_iv"
+    t.string  "encrypted_refresh_token_salt"
+    t.string  "encrypted_access_token"
+    t.string  "encrypted_access_token_iv"
+    t.string  "encrypted_access_token_salt"
   end
 
 end

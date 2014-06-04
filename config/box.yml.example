@@ -1,4 +1,5 @@
 defaults: &defaults
+  encryption_key: "abc123" #you should use the following ruby command to generate the string => OpenSSL::Cipher::Cipher.new('aes-256-cbc').encrypt.random_key
   client_id: box_client_id
   client_secret: box_client_secret
   admin_username: admin
